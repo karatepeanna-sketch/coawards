@@ -1,0 +1,53 @@
+body {
+  margin:0;
+  font-family:'Press Start 2P', monospace;
+  background-color:#111;
+  color:#00ff00;
+}
+
+h1,h2,h3,h4,h5,h6 { color:#00ff00; margin:0 0 6px 0; }
+
+button {
+  background-color:#111;
+  color:#00ff00;
+  border:1px solid #00ff00;
+  border-radius:2px;
+  padding:6px 10px;
+  cursor:pointer;
+  font-family:'Press Start 2P', monospace;
+  font-size:12px;
+}
+
+button:disabled { color:#007700; border-color:#007700; cursor:not-allowed; }
+
+input, select {
+  background-color:#111;
+  color:#00ff00;
+  border:1px solid #00ff00;
+  border-radius:2px;
+  padding:4px 6px;
+  font-family:'Press Start 2P', monospace;
+  font-size:12px;
+}
+
+.drag { display:flex; flex-wrap:wrap; align-items:center; gap:6px; padding:4px 0; border-bottom:1px dashed #00ff00; }
+.drag img { width:50px; height:50px; object-fit:cover; border:1px solid #00ff00; }
+.drag input[type="text"] { flex:1; min-width:100px; padding:4px; font-size:12px; background:#111; color:#00ff00; border:1px solid #00ff00; }
+.drag button, .drag label { padding:4px 6px; font-size:12px; cursor:pointer; border-radius:2px; border:1px solid #00ff00; background:#111; color:#00ff00; }
+
+.card { display:flex; align-items:center; gap:6px; padding:6px; border:1px solid #00ff00; border-radius:2px; margin-bottom:6px; background-color:#111; }
+.card img { width:50px; height:50px; object-fit:cover; }
+
+.progress { width:100%; background-color:#111; height:6px; border-radius:2px; margin-top:4px; border:1px solid #00ff00; }
+.progress span { display:block; height:100%; background-color:#00ff00; border-radius:2px; transition: width 0.5s; }
+
+canvas { margin-top:10px; border:1px solid #00ff00; border-radius:2px; background-color:#111; }
+
+.admin { margin-bottom:20px; padding:10px; border:1px solid #00ff00; border-radius:2px; background-color:#111; }
+
+@media(max-width:480px){
+  .drag { flex-direction:column; align-items:flex-start; }
+  .drag input[type="text"], .drag button, .drag label { width:100%; }
+  .card { flex-direction:column; align-items:flex-start; }
+  .card img { margin-bottom:4px; }
+}

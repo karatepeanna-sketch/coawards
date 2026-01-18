@@ -1,0 +1,116 @@
+const STORAGE_KEY = 'connectedDB';
+let currentNomIndex = 0;
+
+function loadDB() {
+  return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"nominations":[]}');
+}
+
+function saveDB(db) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+}
+
+function getUserId() {
+  if (window.Telegram && Telegram.WebApp) return Telegram.WebApp.initDataUnsafe?.user?.id;
+  return 'local_' + navigator.userAgent;
+}
+
+// --- рендер одной номинации ---
+function renderNomination(nom) {
+  if(!nom.participants) nom.participants = [];
+  const container = document.getElementById('nominationContainer');
+  container.innerHTML = `<h2>${nom.title}</h2><div class="cards"></div>`;
+  const cardsDiv = container.querySelector('.cards');
+
+  if (!nom.participants || nom.participants.length === 0) {
+    cardsDiv.innerHTML = '<p>Нет участников</p>';
+    return;
+  }
+
+  nom.participants.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'card vote-card';
+    card.innerHTML = `
+      <img src="${p.photo}" alt="${p.name}">
+      <div class="card-name">${p.name}</div>
+      <button>Select</button>
+    `;
+    card.querySelector('button').onclick = () => vote(nom.id, p.id);
+    cardsDiv.appendChild(card);
+  });
+
+  document.getElementById('progress').innerText = `Номинация ${currentNomIndex + 1} из ${loadDB().nominations.filter(n => n.active).length}`;
+}
+
+// --- голосование ---
+function vote(nomId, partId) {
+  const db = loadDB();
+  const userId = getUserId();
+  const nom = db.nominations.find(n => n.id === nomId);
+  if (!nom) return;
+
+  nom.participants.forEach(p => {
+    const index = p.votes.indexOf(userId);
+    if (index > -1) p.votes.splice(index, 1);
+  });
+
+  const part = nom.participants.find(p => p.id === partId);
+  if (part) part.votes.push(userId);
+
+  saveDB(db);
+  nextNomination();
+}
+
+// --- следующая номинация ---
+function nextNomination() {
+  const db = loadDB();
+  const activeNoms = db.nominations.filter(n => n.active);
+  currentNomIndex++;
+  if (currentNomIndex >= activeNoms.length) {
+    document.getElementById('nominationContainer').innerHTML = `<h2>Спасибо за голосование!</h2>`;
+    document.getElementById('progress').innerText = '';
+    return;
+  }
+  renderNomination(activeNoms[currentNomIndex]);
+}
+
+// --- старт голосования ---
+function startVoting() {
+  const db = loadDB();
+  const activeNoms = db.nominations.filter(n => n.active);
+
+  if (activeNoms.length === 0) {
+    document.getElementById('nominationContainer').innerHTML = '<p>Нет активных номинаций</p>';
+    return;
+  }
+
+  // Проверяем участников
+  activeNoms.forEach(nom => {
+    if (!nom.participants) nom.participants = [];
+  });
+
+  currentNomIndex = 0;
+  renderNomination(activeNoms[currentNomIndex]);
+}
+
+// --- если базы нет, создаем тестовую ---
+if (!localStorage.getItem(STORAGE_KEY)) {
+  const testDB = {
+    nominations: [
+      {
+        id: 1, title: "Мистер Connected", active: true, participants: [
+          { id: 1, name: "Алексей", photo: "https://placehold.co/200x200/7a0000/00ffcc", votes: [] },
+          { id: 2, name: "Максим", photo: "https://placehold.co/200x200/7a0000/00ffcc", votes: [] }
+        ]
+      },
+      {
+        id: 2, title: "Мисс Connected", active: true, participants: [
+          { id: 3, name: "Анна", photo: "https://placehold.co/200x200/7a0000/00ffcc", votes: [] },
+          { id: 4, name: "Соня", photo: "https://placehold.co/200x200/7a0000/00ffcc", votes: [] }
+        ]
+      }
+    ]
+  };
+  saveDB(testDB);
+}
+
+startVoting();

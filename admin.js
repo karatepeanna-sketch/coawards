@@ -1,11 +1,29 @@
 const STORAGE_KEY = 'connectedDB';
 
 function loadDB() {
-  return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"nominations":[]}');
+  return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { nominations: [] };
 }
 
 function saveDB(db) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+}
+
+function addNom() {
+  const input = document.getElementById('newDesc');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const db = loadDB();
+  db.nominations.push({
+    id: Date.now(),
+    description: text,
+    active: true,
+    mentions: []
+  });
+
+  saveDB(db);
+  input.value = '';
+  renderAdmin();
 }
 
 function renderAdmin() {
@@ -13,64 +31,29 @@ function renderAdmin() {
   const wrap = document.getElementById('adminNoms');
   wrap.innerHTML = '';
 
-  // добавление номинации
-  const add = document.createElement('div');
-  add.className = 'admin';
-  add.innerHTML = `
-    <textarea id="newDesc" placeholder="Описание номинации"></textarea>
-    <button id="addNom">Добавить номинацию</button>
-  `;
-  wrap.appendChild(add);
+  db.nominations.forEach(n => {
+    const counts = {};
+    (n.mentions || []).forEach(m => counts[m] = (counts[m] || 0) + 1);
 
-  document.getElementById('addNom').onclick = () => {
-    const desc = document.getElementById('newDesc').value.trim();
-    if (!desc) return alert('Введите описание');
+    const list = Object.entries(counts)
+      .sort((a,b)=>b[1]-a[1])
+      .map(([name,c])=>`${name} — ${c}`)
+      .join('<br>') || 'Нет упоминаний';
 
-    db.nominations.push({
-      id: Date.now(),
-      description: desc,
-      active: true,
-      mentions: []
-    });
-
-    saveDB(db);
-    renderAdmin();
-  };
-
-  // существующие номинации
-  db.nominations.forEach(nom => {
-    const div = document.createElement('div');
-    div.className = 'admin';
-
-    const stats = {};
-    nom.mentions.forEach(m => stats[m] = (stats[m] || 0) + 1);
-
-    div.innerHTML = `
-      <textarea onchange="updateDesc(${nom.id}, this.value)">${nom.description}</textarea>
-      <button onclick="toggleNom(${nom.id})">${nom.active ? 'Выключить' : 'Включить'}</button>
-      <h4>Упоминания:</h4>
-      ${Object.keys(stats).length === 0 ? '<p>Нет данных</p>' :
-        Object.entries(stats).map(
-          ([name, count]) => `<div>${name} — ${count}</div>`
-        ).join('')
-      }
+    wrap.innerHTML += `
+      <div class="admin">
+        <p>${n.description}</p>
+        <button onclick="toggle(${n.id})">${n.active ? 'Выключить' : 'Включить'}</button>
+        <div>${list}</div>
+      </div>
     `;
-
-    wrap.appendChild(div);
   });
 }
 
-function updateDesc(id, value) {
+function toggle(id) {
   const db = loadDB();
-  const nom = db.nominations.find(n => n.id === id);
-  nom.description = value;
-  saveDB(db);
-}
-
-function toggleNom(id) {
-  const db = loadDB();
-  const nom = db.nominations.find(n => n.id === id);
-  nom.active = !nom.active;
+  const n = db.nominations.find(x => x.id === id);
+  n.active = !n.active;
   saveDB(db);
   renderAdmin();
 }

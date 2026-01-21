@@ -1,25 +1,23 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Connected Awards</title>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8">
+  <title>Admin CO Awards</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h1>Админка Connected Awards</h1>
+<h1>Админка CO Awards</h1>
 
-<!-- Контролы для добавления номинации -->
-<div id="adminNomsControls"></div>
+<div class="admin">
+  <input id="newDesc" placeholder="Описание номинации">
+  <button onclick="addNom()">Добавить номинацию</button>
+</div>
 
-<!-- Список номинаций -->
 <div id="adminNoms"></div>
-
-<h2>Статистика голосов</h2>
-<div id="voteStats"></div>
 
 <script src="admin.js"></script>
 </body>

@@ -1,75 +1,57 @@
-const STORAGE_KEY = 'connectedDB';
-const COMPLETED_KEY = 'connectedCompleted';
-
-function getUserId() {
-  if (window.Telegram && Telegram.WebApp) {
-    return Telegram.WebApp.initDataUnsafe?.user?.id?.toString();
-  }
-  return 'local_' + navigator.userAgent;
-}
-
-function loadDB() {
-  return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { nominations: [] };
-}
-
-function saveDB(db) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-}
-
-const userId = getUserId();
+let nominations = [];
 let currentIndex = 0;
 
+function getTelegramId() {
+  if (window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
+    return Telegram.WebApp.initDataUnsafe.user.id.toString();
+  }
+  return 'guest_' + navigator.userAgent;
+}
+
+async function loadNominations() {
+  const { data } = await supabase
+    .from('nominations')
+    .select('*')
+    .eq('active', true);
+
+  nominations = data;
+  renderNomination();
+}
+
 function renderNomination() {
-  const db = loadDB();
-  const completed = JSON.parse(localStorage.getItem(COMPLETED_KEY) || '[]');
-  const active = db.nominations.filter(n => n.active);
-
-  if (completed.includes(userId)) {
+  const nom = nominations[currentIndex];
+  if (!nom) {
     document.getElementById('nominationContainer').innerHTML =
-      '<h2>Ты уже участвовал ✨</h2>';
-    document.getElementById('progress').innerText = '';
+      '<h2>Спасибо! 🎉</h2>';
     return;
   }
-
-  if (currentIndex >= active.length) {
-    completed.push(userId);
-    localStorage.setItem(COMPLETED_KEY, JSON.stringify(completed));
-    document.getElementById('nominationContainer').innerHTML =
-      '<h2>Спасибо за участие 💾</h2>';
-    document.getElementById('progress').innerText = '';
-    return;
-  }
-
-  const nom = active[currentIndex];
 
   document.getElementById('nominationContainer').innerHTML = `
-    <p>${nom.description || ''}</p>
-    <input id="nickname" placeholder="@nickname">
-    <button onclick="submitNick(${nom.id})">Отправить</button>
+    <h2>Номинация ${currentIndex + 1}</h2>
+    <p>${nom.description}</p>
+    <input id="nick" placeholder="@username">
+    <button onclick="submitMention()">Отправить</button>
   `;
 
   document.getElementById('progress').innerText =
-    `Номинация ${currentIndex + 1} из ${active.length}`;
+    `${currentIndex + 1} / ${nominations.length}`;
 }
 
-function submitNick(nomId) {
-  const input = document.getElementById('nickname');
-  const value = input.value.trim().toLowerCase();
-
-  if (!/^@[a-z0-9_]{3,}$/.test(value)) {
-    alert('Введите корректный @nickname');
+async function submitMention() {
+  const nick = document.getElementById('nick').value.trim();
+  if (!nick.startsWith('@')) {
+    alert('Ник должен начинаться с @');
     return;
   }
 
-  const db = loadDB();
-  const nom = db.nominations.find(n => n.id === nomId);
+  await supabase.from('mentions').insert({
+    nomination_id: nominations[currentIndex].id,
+    nickname: nick,
+    telegram_id: getTelegramId()
+  });
 
-  if (!nom.mentions) nom.mentions = [];
-  nom.mentions.push(value);
-
-  saveDB(db);
   currentIndex++;
   renderNomination();
 }
 
-renderNomination();
+loadNominations();

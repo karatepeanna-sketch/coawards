@@ -4,7 +4,7 @@ const supabaseKey = 'sb_publishable__PvJTawE7Ql_6ZMLmqSgFw_f2rtCVHe';
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 // --- Глобальные функции ---
-window.addNomination = async function() {
+async function addNomination() {
   const desc = document.getElementById('desc').value.trim();
   if (!desc) return alert('Введите описание номинации');
 
@@ -20,7 +20,7 @@ window.addNomination = async function() {
   loadAdmin();
 }
 
-window.loadAdmin = async function() {
+async function loadAdmin() {
   const { data: noms, error: nomErr } = await supabase.from('nominations').select('*');
   const { data: mentions, error: menErr } = await supabase.from('mentions').select('*');
 
@@ -32,18 +32,15 @@ window.loadAdmin = async function() {
   noms.forEach(nom => {
     const related = mentions.filter(m => m.nomination_id === nom.id);
 
-    // Считаем упоминания
     const count = {};
     related.forEach(r => {
       count[r.nickname] = (count[r.nickname] || 0) + 1;
     });
 
-    // Сортируем по убыванию
-    const sorted = Object.entries(count).sort((a, b) => b[1] - a[1]);
+    const sorted = Object.entries(count).sort((a,b)=>b[1]-a[1]);
 
     const div = document.createElement('div');
     div.className = 'admin';
-
     div.innerHTML = `
       <h3>${nom.description} ${nom.active ? '' : '(неактивна)'}</h3>
       ${sorted.map(s => `<div>${s[0]} — ${s[1]}</div>`).join('')}
@@ -51,12 +48,11 @@ window.loadAdmin = async function() {
         ${nom.active ? 'Выключить' : 'Включить'}
       </button>
     `;
-
     wrap.appendChild(div);
   });
 }
 
-window.toggleNom = async function(id, active) {
+async function toggleNom(id, active) {
   const { error } = await supabase.from('nominations')
     .update({ active: !active })
     .eq('id', id);
@@ -65,10 +61,9 @@ window.toggleNom = async function(id, active) {
   loadAdmin();
 }
 
-// --- Инициализация админки ---
+// --- инициализация ---
 document.addEventListener('DOMContentLoaded', () => {
   loadAdmin();
 
-  const addBtn = document.getElementById('addNomBtn');
-  if (addBtn) addBtn.onclick = addNomination;
+  document.getElementById('addNomBtn').onclick = addNomination;
 });

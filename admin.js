@@ -19,8 +19,8 @@
 <div id="adminNoms"></div>
 
 <script>
-const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
-const SUPABASE_KEY = 'YOUR_ANON_KEY';
+const SUPABASE_URL = 'https://bzgrvzaswfcqoyzindnr.supabase.co';
+const SUPABASE_KEY = 'sb_publishable__PvJTawE7Ql_6ZMLmqSgFw_f2rtCVHe';
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // --- Добавление новой номинации ---

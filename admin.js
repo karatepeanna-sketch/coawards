@@ -1,92 +1,74 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Connected Awards</title>
-<link rel="stylesheet" href="style.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-</head>
-<body>
+// --- Supabase client ---
+const supabaseUrl = 'https://bzgrvzaswfcqoyzindnr.supabase.co';
+const supabaseKey = 'sb_publishable__PvJTawE7Ql_6ZMLmqSgFw_f2rtCVHe';
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-<h1>Админка Connected Awards</h1>
-
-<div>
-  <input type="text" id="desc" placeholder="Описание новой номинации">
-  <button id="addNomBtn">Добавить номинацию</button>
-</div>
-
-<div id="adminNoms"></div>
-
-<script>
-const SUPABASE_URL = 'https://bzgrvzaswfcqoyzindnr.supabase.co';
-const SUPABASE_KEY = 'sb_publishable__PvJTawE7Ql_6ZMLmqSgFw_f2rtCVHe';
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// --- Добавление новой номинации ---
-async function addNomination() {
+// --- Глобальные функции ---
+window.addNomination = async function() {
   const desc = document.getElementById('desc').value.trim();
   if (!desc) return alert('Введите описание номинации');
 
-  const { data, error } = await supabase
-    .from('nominations')
-    .insert([{ description: desc, active: true }])
-    .select();
+  const { error } = await supabase.from('nominations').insert({
+    description: desc,
+    active: true,
+    created: new Date().toISOString()
+  });
 
-  if (error) return console.error('Ошибка при добавлении номинации:', error);
+  if (error) return alert('Ошибка добавления: ' + error.message);
 
   document.getElementById('desc').value = '';
   loadAdmin();
 }
 
-// --- Загрузка номинаций и подсчет упоминаний ---
-async function loadAdmin() {
-  const { data: noms, error: nomsErr } = await supabase
-    .from('nominations')
-    .select('*')
-    .order('created', { ascending: true });
+window.loadAdmin = async function() {
+  const { data: noms, error: nomErr } = await supabase.from('nominations').select('*');
+  const { data: mentions, error: menErr } = await supabase.from('mentions').select('*');
 
-  if (nomsErr) return console.error('Ошибка при загрузке номинаций:', nomsErr);
-
-  const { data: mentions, error: mentionsErr } = await supabase
-    .from('mentions')
-    .select('*');
-
-  if (mentionsErr) return console.error('Ошибка при загрузке упоминаний:', mentionsErr);
+  if (nomErr || menErr) return console.error(nomErr || menErr);
 
   const wrap = document.getElementById('adminNoms');
   wrap.innerHTML = '';
 
   noms.forEach(nom => {
-    // фильтруем все упоминания к этой номинации
     const related = mentions.filter(m => m.nomination_id === nom.id);
 
-    // считаем количество упоминаний каждого ника
+    // Считаем упоминания
     const count = {};
     related.forEach(r => {
       count[r.nickname] = (count[r.nickname] || 0) + 1;
     });
 
-    const sorted = Object.entries(count)
-      .sort((a,b)=>b[1]-a[1]); // по убыванию
+    // Сортируем по убыванию
+    const sorted = Object.entries(count).sort((a, b) => b[1] - a[1]);
 
     const div = document.createElement('div');
     div.className = 'admin';
+
     div.innerHTML = `
-      <h3>${nom.description}</h3>
-      ${sorted.length > 0 
-        ? sorted.map(s => `<div>${s[0]} — ${s[1]}</div>`).join('')
-        : '<p>Пока нет упоминаний</p>'}
+      <h3>${nom.description} ${nom.active ? '' : '(неактивна)'}</h3>
+      ${sorted.map(s => `<div>${s[0]} — ${s[1]}</div>`).join('')}
+      <button onclick="toggleNom(${nom.id}, ${nom.active})">
+        ${nom.active ? 'Выключить' : 'Включить'}
+      </button>
     `;
 
     wrap.appendChild(div);
   });
 }
 
-// --- Инициализация ---
-document.getElementById('addNomBtn').onclick = addNomination;
-loadAdmin();
-</script>
+window.toggleNom = async function(id, active) {
+  const { error } = await supabase.from('nominations')
+    .update({ active: !active })
+    .eq('id', id);
 
-</body>
-</html>
+  if (error) return alert('Ошибка: ' + error.message);
+  loadAdmin();
+}
+
+// --- Инициализация админки ---
+document.addEventListener('DOMContentLoaded', () => {
+  loadAdmin();
+
+  const addBtn = document.getElementById('addNomBtn');
+  if (addBtn) addBtn.onclick = addNomination;
+});

@@ -1,25 +1,27 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <meta charset="UTF-8">
-  <title>Admin CO Awards</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin CO Awards</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
 </head>
 <body>
 
-<h1>Админка CO Awards</h1>
+<h1>Админка CO: Awards</h1>
 
 <div class="admin">
-  <input id="newDesc" placeholder="Описание номинации">
-  <button onclick="addNom()">Добавить номинацию</button>
+  <textarea id="desc" placeholder="Описание номинации"></textarea>
+  <button onclick="addNomination()">Добавить номинацию</button>
 </div>
 
 <div id="adminNoms"></div>
-<script src="supabase.js"></script>
+
 <script src="admin.js"></script>
 </body>
 </html>

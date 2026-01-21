@@ -1,61 +1,44 @@
-const STORAGE_KEY = 'connectedDB';
+async function addNomination() {
+  const desc = document.getElementById('desc').value.trim();
+  if (!desc) return;
 
-function loadDB() {
-  return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { nominations: [] };
-}
-
-function saveDB(db) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-}
-
-function addNom() {
-  const input = document.getElementById('newDesc');
-  const text = input.value.trim();
-  if (!text) return;
-
-  const db = loadDB();
-  db.nominations.push({
-    id: Date.now(),
-    description: text,
-    active: true,
-    mentions: []
+  await supabase.from('nominations').insert({
+    description: desc,
+    active: true
   });
 
-  saveDB(db);
-  input.value = '';
-  renderAdmin();
+  document.getElementById('desc').value = '';
+  loadAdmin();
 }
 
-function renderAdmin() {
-  const db = loadDB();
+async function loadAdmin() {
+  const { data: noms } = await supabase.from('nominations').select('*');
+  const { data: mentions } = await supabase.from('mentions').select('*');
+
   const wrap = document.getElementById('adminNoms');
   wrap.innerHTML = '';
 
-  db.nominations.forEach(n => {
-    const counts = {};
-    (n.mentions || []).forEach(m => counts[m] = (counts[m] || 0) + 1);
+  noms.forEach(nom => {
+    const related = mentions.filter(m => m.nomination_id === nom.id);
 
-    const list = Object.entries(counts)
-      .sort((a,b)=>b[1]-a[1])
-      .map(([name,c])=>`${name} — ${c}`)
-      .join('<br>') || 'Нет упоминаний';
+    const count = {};
+    related.forEach(r => {
+      count[r.nickname] = (count[r.nickname] || 0) + 1;
+    });
 
-    wrap.innerHTML += `
-      <div class="admin">
-        <p>${n.description}</p>
-        <button onclick="toggle(${n.id})">${n.active ? 'Выключить' : 'Включить'}</button>
-        <div>${list}</div>
-      </div>
+    const sorted = Object.entries(count)
+      .sort((a,b)=>b[1]-a[1]);
+
+    const div = document.createElement('div');
+    div.className = 'admin';
+
+    div.innerHTML = `
+      <h3>${nom.description}</h3>
+      ${sorted.map(s => `<div>${s[0]} — ${s[1]}</div>`).join('')}
     `;
+
+    wrap.appendChild(div);
   });
 }
 
-function toggle(id) {
-  const db = loadDB();
-  const n = db.nominations.find(x => x.id === id);
-  n.active = !n.active;
-  saveDB(db);
-  renderAdmin();
-}
-
-renderAdmin();
+loadAdmin();

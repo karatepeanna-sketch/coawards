@@ -1,103 +1,190 @@
+/* ===== RETRO COMPUTER STYLE ===== */
+
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
 * {
   box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
 }
 
 body {
   margin: 0;
-  background: linear-gradient(160deg, #0f172a, #020617);
-  color: white;
+  background: #020403;
+  color: #00ff9c;
+  font-family: 'VT323', monospace;
   min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-shadow: 0 0 6px rgba(0,255,160,.6);
 }
 
-#app {
-  max-width: 420px;
-  margin: auto;
+/* CRT эффект */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(0,255,150,0.03),
+      rgba(0,255,150,0.03) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  mix-blend-mode: overlay;
+  z-index: 999;
+}
+
+.app {
+  width: 100%;
+  max-width: 390px;
   min-height: 100vh;
   padding: 20px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.screen {
-  display: none;
   flex-direction: column;
-  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  animation: flicker 3s infinite;
+}
+
+/* Лёгкое мигание экрана */
+@keyframes flicker {
+  0%,100% { opacity: 1 }
+  50% { opacity: .98 }
+}
+
+/* Заголовки */
+h1, h2 {
+  font-size: 26px;
+  margin: 0;
   text-align: center;
+  letter-spacing: 2px;
+}
+
+/* Прогресс текст */
+#progress {
+  font-size: 18px;
+  text-align: center;
+  opacity: .8;
+}
+
+/* Progress bar */
+.progress-bar {
   width: 100%;
-  animation: fade 0.4s ease;
+  height: 12px;
+  border: 1px solid #00ff9c;
+  padding: 2px;
 }
 
-.screen.active {
-  display: flex;
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(
+    90deg,
+    #00ff9c,
+    #6bffd1,
+    #00ff9c
+  );
+  animation: progressGlow 1.5s infinite linear;
 }
 
-.logo {
-  font-size: 70px;
-  margin-bottom: 12px;
+@keyframes progressGlow {
+  0% { filter: brightness(1) }
+  50% { filter: brightness(1.5) }
+  100% { filter: brightness(1) }
 }
 
-button {
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  border: none;
-  padding: 14px 24px;
-  border-radius: 14px;
-  font-size: 16px;
-  color: white;
-  margin-top: 16px;
-  width: 100%;
-  max-width: 280px;
+/* Карточка номинации */
+#nominationContainer {
+  border: 1px solid #00ff9c;
+  padding: 20px;
+  background: rgba(0,255,160,0.03);
+  box-shadow: 0 0 20px rgba(0,255,160,.15);
+  animation: screenOn .5s ease-out;
 }
 
+@keyframes screenOn {
+  from {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+/* Input */
 input {
   width: 100%;
+  margin-top: 14px;
   padding: 14px;
-  border-radius: 12px;
-  border: none;
-  margin-top: 12px;
-  font-size: 16px;
+  background: black;
+  border: 1px solid #00ff9c;
+  color: #00ff9c;
+  font-family: inherit;
+  font-size: 18px;
+  outline: none;
 }
 
-.card {
-  background: rgba(255,255,255,0.05);
-  border-radius: 18px;
-  padding: 22px;
-  width: 100%;
-  animation: slide 0.35s ease;
+input::placeholder {
+  color: rgba(0,255,160,.5);
 }
 
-.progress-wrap {
-  width: 100%;
-  margin-bottom: 16px;
+/* Button */
+button {
+  margin-top: 18px;
+  padding: 14px;
+  background: black;
+  border: 1px solid #00ff9c;
+  color: #00ff9c;
+  font-family: inherit;
+  font-size: 20px;
+  cursor: pointer;
+  letter-spacing: 2px;
+  transition: .15s;
 }
 
-.progress-bar {
-  background: rgba(255,255,255,0.15);
-  border-radius: 100px;
-  height: 8px;
-  overflow: hidden;
+button:hover {
+  background: rgba(0,255,160,.1);
+  box-shadow: 0 0 14px rgba(0,255,160,.6);
 }
 
-#progressFill {
-  height: 100%;
-  background: linear-gradient(90deg, #22c55e, #4ade80);
-  width: 0%;
-  transition: width .4s ease;
+/* Экран загрузки */
+.loader-screen {
+  text-align: center;
+  animation: terminalBoot 1.5s steps(14);
 }
 
-#progressText {
-  font-size: 13px;
-  opacity: .8;
-  margin-bottom: 6px;
+@keyframes terminalBoot {
+  from { clip-path: inset(0 0 100% 0); }
+  to { clip-path: inset(0 0 0 0); }
 }
 
-@keyframes fade {
-  from { opacity: 0 }
-  to { opacity: 1 }
+.loader-text {
+  font-size: 22px;
+  line-height: 1.6;
 }
 
-@keyframes slide {
-  from { transform: translateY(20px); opacity: 0 }
-  to { transform: translateY(0); opacity: 1 }
+/* Мигающий курсор */
+.cursor::after {
+  content: "_";
+  animation: blink 1s infinite;
 }
+
+@keyframes blink {
+  0%,50% { opacity: 1 }
+  51%,100% { opacity: 0 }
+}
+
+/* Мобильная адаптация */
+@media (max-width: 420px) {
+  h1, h2 {
+    font-size: 24px;
+  }
+  input, button {
+    font-size: 18px;
+  }
+}
+

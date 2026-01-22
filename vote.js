@@ -1,76 +1,91 @@
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+const supabaseUrl = "https://bzgrvzaswfcqoyzindnr.supabase.co";
+const supabaseKey = "sb_publishable__PvJTawE7Ql_6ZMLmqSgFw_f2rtCVHe";
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+
 let nominations = [];
-let currentIndex = 0;
+let currentNom = 0;
 
-function getTelegramId() {
-  if (window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
-    return Telegram.WebApp.initDataUnsafe.user.id.toString();
-  }
-  return 'guest_' + navigator.userAgent;
-}
-
+// ===== Загрузка номинаций =====
 async function loadNominations() {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('nominations')
     .select('*')
     .eq('active', true)
-    .order('created_at');
+    .order('id', { ascending: true });
 
-  nominations = data || [];
-  renderNomination();
-}
-
-function renderNomination() {
-  const container = document.getElementById('nominationContainer');
-  const progress = document.getElementById('progress');
-
-  if (currentIndex >= nominations.length) {
-    container.innerHTML = `<h2>Спасибо 💚</h2>`;
-    progress.innerText = '';
+  if (error) {
+    console.error(error);
     return;
   }
 
-  const nom = nominations[currentIndex];
+  nominations = data;
+  if (nominations.length === 0) {
+    document.getElementById('nominationContainer').innerHTML =
+      `<p>Номинации скоро появятся...</p>`;
+    return;
+  }
+
+  loadCurrentNomination();
+}
+
+// ===== Загрузка одной номинации =====
+async function loadCurrentNomination() {
+  const nom = nominations[currentNom];
+
+  document.getElementById('progress').innerText =
+    `Номинация ${currentNom + 1} из ${nominations.length}`;
+
+  const container = document.getElementById('nominationContainer');
 
   container.innerHTML = `
-    <h2>Номинация ${currentIndex + 1}</h2>
-    <p>${nom.description}</p>
-
-    <input id="nickname" placeholder="@username">
-    <button onclick="submitMention()">Отправить</button>
+    <h2>${nom.description}</h2>
+    <input id="nickname" placeholder="@nickname" style="width:100%;margin-top:12px">
+    <button id="sendBtn">Отправить</button>
   `;
 
-  progress.innerText = `${currentIndex + 1} / ${nominations.length}`;
+  document.getElementById('sendBtn').onclick = () => submitNomination(nom.id);
 }
 
-async function submitMention() {
-  const nick = document.getElementById('nickname').value.trim();
-  if (!nick.startsWith('@')) {
-    alert('Ник должен начинаться с @');
+// ===== Отправка никнейма =====
+async function submitNomination(nominationId) {
+  const input = document.getElementById('nickname');
+  const nickname = input.value.trim();
+
+  if (!nickname || !nickname.startsWith('@')) {
+    alert('Введите ник в формате @username');
     return;
   }
 
-  const telegramId = getTelegramId();
+  const tgId =
+    window.Telegram?.WebApp?.initDataUnsafe?.user?.id ||
+    'web_' + navigator.userAgent;
 
-  // защита от повторной отправки
-  const { data: exists } = await supabase
+  const { error } = await supabase
     .from('mentions')
-    .select('id')
-    .eq('nomination_id', nominations[currentIndex].id)
-    .eq('telegram_id', telegramId);
+    .insert({
+      nomination_id: nominationId,
+      nickname,
+      tg_id: tgId
+    });
 
-  if (exists.length > 0) {
-    alert('Ты уже отправляла ответ в этой номинации');
+  if (error) {
+    alert('Ошибка отправки');
+    console.error(error);
     return;
   }
 
-  await supabase.from('mentions').insert({
-    nomination_id: nominations[currentIndex].id,
-    nickname: nick,
-    telegram_id: telegramId
-  });
+  currentNom++;
 
-  currentIndex++;
-  renderNomination();
+  if (currentNom >= nominations.length) {
+    document.getElementById('nominationContainer').innerHTML =
+      `<h2>Спасибо 💚</h2>`;
+    document.getElementById('progress').innerText = '';
+  } else {
+    loadCurrentNomination();
+  }
 }
 
 loadNominations();

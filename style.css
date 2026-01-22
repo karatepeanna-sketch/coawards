@@ -114,11 +114,27 @@ button:hover {
   51%,100% { opacity:0 }
 }
 
-/* Admin */
-.admin-box {
-  border:1px solid #00ff9c;
-  padding:12px;
-  margin-bottom:12px;
+/* --- Стили админки в стиле старого компьютера --- */
+.admin-page input,
+.admin-page button,
+.admin-page .admin {
+  background-color: #111;
+  color: #00ff00;
+  border: 1px solid #00ff00;
+  border-radius: 2px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px;
+}
+
+.admin-page h1 {
+  color: #00ff00;
+}
+
+.admin-page .admin {
+  border: 1px solid #00ff00;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 2px;
 }
 
 /* Mobile */

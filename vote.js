@@ -2,108 +2,69 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const supabaseUrl = "https://bzgrvzaswfcqoyzindnr.supabase.co";
 const supabaseKey = "sb_publishable__PvJTawE7Ql_6ZMLmqSgFw_f2rtCVHe";
-const client = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 let nominations = [];
 let currentNom = 0;
 
-const splash = document.getElementById('splash');
-const welcome = document.getElementById('welcome');
-const main = document.getElementById('main');
-const card = document.getElementById('card');
-const progressFill = document.getElementById('progressFill');
-const progressText = document.getElementById('progressText');
-
-// ===== Экраны =====
-
-function show(screen) {
-  [splash, welcome, main].forEach(s => s.classList.remove('active'));
-  screen.classList.add('active');
-}
-
-// ===== Загрузка =====
-
+// Boot screen delay
 setTimeout(() => {
-  show(welcome);
-}, 1200);
-
-document.getElementById('startBtn').onclick = () => {
-  show(main);
+  document.getElementById('bootScreen').style.display='none';
+  document.getElementById('voting').style.display='block';
   loadNominations();
-};
+}, 2200);
 
-// ===== Номинации =====
-
-async function loadNominations() {
-  const { data, error } = await client
-    .from('nominations')
+// ===== Загрузка номинаций =====
+async function loadNominations(){
+  const { data, error } = await supabase.from('nominations')
     .select('*')
     .eq('active', true)
-    .order('id');
-
-  if (error || !data.length) {
-    card.innerHTML = `<h2>Скоро здесь появятся номинации 💫</h2>`;
+    .order('id', {ascending:true});
+  if(error){ console.error(error); return; }
+  nominations = data;
+  if(!nominations.length){
+    document.getElementById('nominationContainer').innerHTML='<p>Скоро номинации...</p>';
     return;
   }
-
-  nominations = data;
-  loadCard();
+  loadCurrentNom();
 }
 
-function loadCard() {
+// ===== Загрузка номинации =====
+function loadCurrentNom(){
   const nom = nominations[currentNom];
-
-  progressText.innerText = `Номинация ${currentNom + 1} из ${nominations.length}`;
-  progressFill.style.width = ((currentNom + 1) / nominations.length * 100) + '%';
-
-  card.innerHTML = `
+  const container = document.getElementById('nominationContainer');
+  container.innerHTML=`
     <h2>${nom.description}</h2>
-    <input id="nickname" placeholder="@username">
+    <input id="nickname" placeholder="@nickname">
     <button id="sendBtn">Отправить</button>
   `;
+  document.getElementById('sendBtn').onclick = () => submitNom(nom.id);
+  updateProgress();
+}
 
-  document.getElementById('sendBtn').onclick = () =>
-    submitNomination(nom.id);
+// ===== Прогресс =====
+function updateProgress(){
+  const percent = ((currentNom)/nominations.length)*100;
+  document.getElementById('progressFill').style.width = percent + '%';
 }
 
 // ===== Отправка =====
-
-async function submitNomination(nominationId) {
+async function submitNom(nomId){
   const nickname = document.getElementById('nickname').value.trim();
+  if(!nickname.startsWith('@')) return alert('Введите ник с @');
 
-  if (!nickname || !nickname.startsWith('@')) {
-    alert('Введите ник в формате @username');
-    return;
-  }
+  const tgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 'web_' + navigator.userAgent;
 
-  const tgId =
-    window.Telegram?.WebApp?.initDataUnsafe?.user?.id ||
-    'web_' + navigator.userAgent;
-
-  const { error } = await client.from('mentions').insert({
-    nomination_id: nominationId,
-    nickname,
-    tg_id: tgId
-  });
-
-  if (error) {
-    if (error.code === '23505') {
-      alert('Ты уже отправлял вариант 👀');
-    } else {
-      alert('Ошибка отправки 😢');
-      console.error(error);
-    }
+  const { error } = await supabase.from('mentions').insert({ nomination_id:nomId, nickname, tg_id:tgId });
+  if(error){
+    if(error.code==='23505') alert('Ты уже отправлял для этой номинации!');
+    else { console.error(error); alert('Ошибка 😢'); }
     return;
   }
 
   currentNom++;
-
-  if (currentNom >= nominations.length) {
-    card.innerHTML = `<h1>Спасибо 💚</h1><p>Голос учтён</p>`;
-    progressText.innerText = '';
-    progressFill.style.width = '100%';
-  } else {
-    loadCard();
-  }
+  if(currentNom >= nominations.length){
+    document.getElementById('nominationContainer').innerHTML='<h2>Спасибо 💚</h2>';
+    document.getElementById('progressFill').style.width='100%';
+  } else loadCurrentNom();
 }
-

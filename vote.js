@@ -64,12 +64,22 @@ async function submitNomination(nominationId) {
     'web_' + navigator.userAgent;
 
   const { error } = await client
-    .from('mentions')
-    .insert({
-      nomination_id: nominationId,
-      nickname,
-      tg_id: tgId
-    });
+  .from('mentions')
+  .insert({
+    nomination_id: nomId,
+    nickname,
+    tg_id: userId
+  });
+
+if (error) {
+  if (error.code === '23505') {
+    alert('Ты уже отправлял вариант для этой номинации 👀');
+  } else {
+    alert('Ошибка отправки 😢');
+    console.error(error);
+  }
+  return;
+}
 
   if (error) {
     alert('Ошибка отправки');

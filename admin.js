@@ -23,12 +23,12 @@ async function addNomination() {
 }
 
 async function loadAdmin() {
-  const { data: noms, error: nomErr } = await supabase
+  const { data: noms, error: nomErr } = await client
     .from('nominations')
     .select('*')
     .order('id', { ascending: true });
 
-  const { data: mentions, error: menErr } = await supabase
+  const { data: mentions, error: menErr } = await client
     .from('mentions')
     .select('*');
 
@@ -81,7 +81,7 @@ async function updateNom(id) {
   const value = document.getElementById(`edit-${id}`).value.trim();
   if (!value) return;
 
-  const { error } = await supabase
+  const { error } = await client
     .from('nominations')
     .update({ description: value })
     .eq('id', id);

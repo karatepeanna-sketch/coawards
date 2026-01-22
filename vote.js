@@ -3,14 +3,14 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const supabaseUrl = "https://bzgrvzaswfcqoyzindnr.supabase.co";
 const supabaseKey = "sb_publishable__PvJTawE7Ql_6ZMLmqSgFw_f2rtCVHe";
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+const client = supabase.createClient(supabaseUrl, supabaseKey);
 
 let nominations = [];
 let currentNom = 0;
 
 // ===== Загрузка номинаций =====
 async function loadNominations() {
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from('nominations')
     .select('*')
     .eq('active', true)
@@ -63,7 +63,7 @@ async function submitNomination(nominationId) {
     window.Telegram?.WebApp?.initDataUnsafe?.user?.id ||
     'web_' + navigator.userAgent;
 
-  const { error } = await supabase
+  const { error } = await client
     .from('mentions')
     .insert({
       nomination_id: nominationId,

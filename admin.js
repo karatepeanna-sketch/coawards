@@ -1,15 +1,9 @@
-// ====== Инициализация Supabase ======
-const client = supabase.createClient(
-  'https://bzgrvzaswfcqoyzindnr.supabase.co',
-  'sb_publishable__PvJTawE7Ql_6ZMLmqSgFw_f2rtCVHe'
-);
-
-// ====== Добавление номинации ======
+// ======== Добавление номинации ========
 async function addNomination() {
   const desc = document.getElementById('desc').value.trim();
   if (!desc) return alert('Введите описание');
 
-  const { error } = await client.from('nominations').insert({
+  const { error } = await supabase.from('nominations').insert({
     description: desc,
     active: true
   });
@@ -24,16 +18,14 @@ async function addNomination() {
   loadAdmin();
 }
 
-document.getElementById('addNomBtn').onclick = addNomination;
-
-// ====== Загрузка админки ======
+// ======== Загрузка админки ========
 async function loadAdmin() {
-  const { data: noms, error: nomErr } = await client
+  const { data: noms, error: nomErr } = await supabase
     .from('nominations')
     .select('*')
     .order('id', { ascending: true });
 
-  const { data: mentions, error: menErr } = await client
+  const { data: mentions, error: menErr } = await supabase
     .from('mentions')
     .select('*');
 
@@ -46,6 +38,7 @@ async function loadAdmin() {
   wrap.innerHTML = '';
 
   noms.forEach(nom => {
+    // собираем упоминания по этой номинации
     const related = mentions.filter(
       m => Number(m.nomination_id) === Number(nom.id)
     );
@@ -55,13 +48,13 @@ async function loadAdmin() {
       counter[r.nickname] = (counter[r.nickname] || 0) + 1;
     });
 
-    const sorted = Object.entries(counter).sort((a, b) => b[1] - a[1]);
+    const sorted = Object.entries(counter).sort((a,b) => b[1]-a[1]);
 
     const div = document.createElement('div');
-    div.className = 'admin-nomination';
+    div.className = 'admin';
 
     div.innerHTML = `
-      <input value="${nom.description}" id="edit-${nom.id}" style="width:60%">
+      <input value="${nom.description}" id="edit-${nom.id}">
       <button onclick="updateNom(${nom.id})">💾</button>
       <button onclick="deleteNom(${nom.id})">🗑</button>
 
@@ -73,22 +66,22 @@ async function loadAdmin() {
   });
 }
 
-// ====== Удаление номинации ======
+// ======== Удаление номинации ========
 async function deleteNom(id) {
   if (!confirm('Удалить номинацию и все упоминания?')) return;
 
-  await client.from('mentions').delete().eq('nomination_id', id);
-  await client.from('nominations').delete().eq('id', id);
+  await supabase.from('mentions').delete().eq('nomination_id', id);
+  await supabase.from('nominations').delete().eq('id', id);
 
   loadAdmin();
 }
 
-// ====== Редактирование номинации ======
+// ======== Редактирование номинации ========
 async function updateNom(id) {
   const value = document.getElementById(`edit-${id}`).value.trim();
   if (!value) return;
 
-  const { error } = await client
+  const { error } = await supabase
     .from('nominations')
     .update({ description: value })
     .eq('id', id);
@@ -101,5 +94,6 @@ async function updateNom(id) {
   loadAdmin();
 }
 
-// ====== Старт админки ======
+// ======== Инициализация ========
+document.getElementById('addNomBtn').onclick = addNomination;
 loadAdmin();

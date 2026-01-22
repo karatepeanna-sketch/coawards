@@ -1,4 +1,4 @@
-const supabase = window.supabase.createClient(
+const client = supabase.createClient(
   'https://bzgrvzaswfcqoyzindnr.supabase.co',
   'sb_publishable__PvJTawE7Ql_6ZMLmqSgFw_f2rtCVHe'
 );
@@ -7,7 +7,7 @@ async function addNomination() {
   const desc = document.getElementById('desc').value.trim();
   if (!desc) return alert('Введите описание');
 
-  const { error } = await supabase.from('nominations').insert({
+  const { error } = await client.from('nominations').insert({
     description: desc,
     active: true
   });
@@ -71,8 +71,8 @@ async function loadAdmin() {
 async function deleteNom(id) {
   if (!confirm('Удалить номинацию и все упоминания?')) return;
 
-  await supabase.from('mentions').delete().eq('nomination_id', id);
-  await supabase.from('nominations').delete().eq('id', id);
+  await client.from('mentions').delete().eq('nomination_id', id);
+  await client.from('nominations').delete().eq('id', id);
 
   loadAdmin();
 }

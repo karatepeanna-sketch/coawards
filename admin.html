@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Админка Connected Awards</title>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body class="admin-page">
@@ -12,15 +11,23 @@
 <h1>Админка Connected Awards</h1>
 
 <div class="add-nomination">
-  <input id="desc" placeholder="Описание номинации" style="width:60%">
+  <input id="desc" placeholder="Описание номинации">
   <button id="addNomBtn">Добавить номинацию</button>
 </div>
 
 <div id="adminNoms"></div>
 
-<!-- Supabase JS v2 -->
+<!-- Supabase CDN -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<!-- Наш JS -->
+<script>
+  // создаём глобальный объект supabase
+  window.supabase = supabase.createClient(
+    'https://bzgrvzaswfcqoyzindnr.supabase.co',
+    'sb_publishable__PvJTawE7Ql_6ZMLmqSgFw_f2rtCVHe'
+  );
+</script>
+
+<!-- наш JS -->
 <script src="admin.js"></script>
 
 </body>

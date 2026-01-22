@@ -56,10 +56,12 @@ async function loadAdmin() {
     div.className = 'admin';
 
     div.innerHTML = `
-      <h3>${nom.description}</h3>
+      <input value="${nom.description}" id="edit-${nom.id}">
+      <button onclick="updateNom(${nom.id})">💾</button>
+      <button onclick="deleteNom(${nom.id})">🗑</button>
+
       ${sorted.length === 0 ? '<p>Пока нет упоминаний</p>' : ''}
       ${sorted.map(s => `<div>${s[0]} — ${s[1]}</div>`).join('')}
-      <button onclick="deleteNom(${nom.id})">Удалить номинацию</button>
     `;
 
     wrap.appendChild(div);
@@ -71,6 +73,23 @@ async function deleteNom(id) {
 
   await supabase.from('mentions').delete().eq('nomination_id', id);
   await supabase.from('nominations').delete().eq('id', id);
+
+  loadAdmin();
+}
+
+async function updateNom(id) {
+  const value = document.getElementById(`edit-${id}`).value.trim();
+  if (!value) return;
+
+  const { error } = await supabase
+    .from('nominations')
+    .update({ description: value })
+    .eq('id', id);
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
 
   loadAdmin();
 }

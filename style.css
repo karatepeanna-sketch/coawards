@@ -106,7 +106,7 @@ button:hover {
   margin-bottom: 12px;
   border: 1px solid #00ff9c;
   background: rgba(0,255,160,0.03);
-  font-size: 12px;
+  font-size: 8px;
 }
 
 .vote-card img {
@@ -118,7 +118,7 @@ button:hover {
 
 .vote-card .card-name {
   margin-top: 6px;
-  font-size: 11px;
+  font-size: 6px;
 }
 
 /* Boot screen */

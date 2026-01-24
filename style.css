@@ -1,8 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
+* {
+  font-family: "Press Start 2P", monospace;
+  box-sizing: border-box;
+}
+
 body {
   margin:0;
-  font-family: "Press Start 2P", system-ui;
   background: #020403;
   color: #00ff9c;
   display:flex;
@@ -95,6 +99,26 @@ button:hover {
   0% { filter: brightness(1) }
   50% { filter: brightness(1.5) }
   100% { filter: brightness(1) }
+}
+
+.vote-card {
+  padding: 14px;
+  margin-bottom: 12px;
+  border: 1px solid #00ff9c;
+  background: rgba(0,255,160,0.03);
+  font-size: 12px;
+}
+
+.vote-card img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border: 1px solid #00ff9c;
+}
+
+.vote-card .card-name {
+  margin-top: 6px;
+  font-size: 11px;
 }
 
 /* Boot screen */

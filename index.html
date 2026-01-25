@@ -3,10 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CO: AWARDS 2026</title>
+
 <link rel="stylesheet" href="style.css">
+  <title>CO: AWARDS 2026</title>
 </head>
 <body>
+
+<h1 class="system-title">CO: AWARDS 2026</h1>
+
 <div class="container">
   <div id="bootScreen" class="boot-screen">
     CONNECTED TERMINAL v1.0<br>
@@ -14,15 +18,18 @@
     LOADING MODULES...<br>
     ACCESS GRANTED<span class="cursor"></span>
   </div>
-  <h1>CO: AWARDS 2026</h1>
+
   <div id="voting" style="display:none;">
     <div id="nominationContainer"></div>
-    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
   </div>
 </div>
 
 <script type="module" src="vote.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+
 </body>
 </html>
 

@@ -8,18 +8,17 @@
 </head>
 <body>
 
-  <div class="container">
+  <!-- Заголовок вне контейнера голосования -->
+  <div id="awardsTitle" class="awards-title" style="display:none;">
+    CO: AWARDS 2026<span class="cursor"></span>
+  </div>
 
+  <div class="container">
     <!-- BOOT SCREEN -->
     <div id="bootScreen" class="boot-screen">
       CONNECTED TERMINAL INTERFACE v1.0<br>
       INITIALIZING CORE MODULES...<br>
       ACCESS GRANTED<span class="cursor"></span>
-    </div>
-
-    <!-- AWARDS TITLE (появляется только после boot screen) -->
-    <div id="awardsTitle" class="awards-title" style="display:none;">
-      CO: AWARDS 2026<span class="cursor"></span>
     </div>
 
     <!-- VOTING UI -->
@@ -29,21 +28,15 @@
         <div class="progress-fill" id="progressFill"></div>
       </div>
     </div>
-
   </div>
 
   <script type="module" src="vote.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
   <script>
-    // Задержка boot screen → показываем заголовок и голосование
+    // Показ после boot screen
     setTimeout(() => {
-      // Скрываем boot screen
       document.getElementById('bootScreen').style.display = 'none';
-
-      // Показываем CO: AWARDS 2026 сверху
       document.getElementById('awardsTitle').style.display = 'block';
-
-      // Показываем голосование
       document.getElementById('voting').style.display = 'block';
     }, 2200);
   </script>

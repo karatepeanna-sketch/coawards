@@ -101,7 +101,7 @@ async function submitNom(nomId) {
   if (currentNom >= nominations.length) {
     document.getElementById('nominationContainer').innerHTML = `
       <div class="nom-main-title">THANK YOU</div>
-      <div class="nom-title">Ты прошёл весь путь 💾</div>
+      <div class="nom-title">7.02 YAUZA PLACE // сбор с 18:30 до 19:00, узнай кто победил</div>
     `;
 
     document.getElementById('progressFill').style.width = '100%';

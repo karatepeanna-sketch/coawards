@@ -44,13 +44,14 @@ function loadCurrentNom() {
 
   const container = document.getElementById('nominationContainer');
 
-  container.innerHTML = `
+   container.innerHTML = `
     <div class="nom-main-title">${nom.title}</div>
     <div class="nom-title">${nom.description}</div>
 
     <input id="nickname" placeholder="@nickname">
-    <button id="sendBtn">ENTER</button>
+    <button id="sendBtn">Отправить</button>
   `;
+
 
   document.getElementById('sendBtn').onclick = () =>
     submitNom(nom.id);

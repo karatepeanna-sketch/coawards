@@ -1,5 +1,3 @@
-const supabase = window.supabase;
-
 // ======== Добавление номинации ========
 async function addNomination() {
   const title = document.getElementById('title').value.trim();
@@ -7,7 +5,7 @@ async function addNomination() {
 
   if (!title || !desc) return alert('Заполни оба поля');
 
-  const { error } = await supabase.from('nominations').insert({
+  const { error } = await window.supabase.from('nominations').insert({
     title,
     description: desc,
     active: true
@@ -26,12 +24,12 @@ async function addNomination() {
 
 // ======== Загрузка админки ========
 async function loadAdmin() {
-  const { data: noms, error: nomErr } = await supabase
+  const { data: noms, error: nomErr } = await window.supabase
     .from('nominations')
     .select('*')
     .order('id', { ascending: true });
 
-  const { data: mentions, error: menErr } = await supabase
+  const { data: mentions, error: menErr } = await window.supabase
     .from('mentions')
     .select('*');
 
@@ -83,8 +81,8 @@ async function loadAdmin() {
 async function deleteNom(id) {
   if (!confirm('Удалить номинацию и все упоминания?')) return;
 
-  await supabase.from('mentions').delete().eq('nomination_id', id);
-  await supabase.from('nominations').delete().eq('id', id);
+  await window.supabase.from('mentions').delete().eq('nomination_id', id);
+  await window.supabase.from('nominations').delete().eq('id', id);
 
   loadAdmin();
 }
@@ -96,7 +94,7 @@ async function updateNom(id) {
 
   if (!title || !desc) return;
 
-  const { error } = await supabase
+  const { error } = await window.supabase
     .from('nominations')
     .update({ title, description: desc })
     .eq('id', id);

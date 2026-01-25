@@ -126,3 +126,4 @@ async function submitNom(nomId) {
     setTimeout(loadCurrentNom, 250);
   }
 }
+

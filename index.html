@@ -8,12 +8,6 @@
 </head>
 <body>
 
-  <!-- SYSTEM TITLE -->
-  <div class="system-header">
-    <h1 class="system-title">CO: AWARDS 2026</h1>
-    <div class="system-sub">CONNECTED TERMINAL INTERFACE</div>
-  </div>
-
   <!-- MAIN TERMINAL -->
   <div class="container">
 
@@ -23,6 +17,11 @@
       INITIALIZING CORE...<br>
       LOADING MODULES...<br>
       ACCESS GRANTED<span class="cursor"></span>
+    </div>
+
+    <!-- AWARDS TITLE -->
+    <div id="awardsTitle" class="awards-title" style="display:none;">
+      CO: AWARDS 2026<span class="cursor"></span>
     </div>
 
     <!-- VOTING UI -->
@@ -38,7 +37,14 @@
 
   <script type="module" src="vote.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+  <script>
+    // Задержка для boot screen и показ заголовка
+    setTimeout(() => {
+      document.getElementById('bootScreen').style.display = 'none';
+      document.getElementById('awardsTitle').style.display = 'block';
+      document.getElementById('voting').style.display = 'block';
+    }, 2200);
+  </script>
 
 </body>
 </html>
-

@@ -8,10 +8,26 @@ let nominations = [];
 let currentNom = 0;
 
 // Boot screen
-setTimeout(() => {
+setTimeout(async () => {
   document.getElementById('bootScreen').style.display = 'none';
   document.getElementById('voting').style.display = 'block';
-  loadNominations();
+
+  await loadNominations();
+
+  // Если есть сохранённый прогресс
+  const savedNom = localStorage.getItem('currentNom');
+  if (savedNom && !isNaN(savedNom) && savedNom < nominations.length) {
+    const continueVote = confirm(
+      "Мы нашли ваш прогресс. Продолжить с последней номинации?"
+    );
+    if (continueVote) {
+      currentNom = parseInt(savedNom);
+    } else {
+      localStorage.removeItem('currentNom');
+    }
+  }
+
+  loadCurrentNom();
 }, 2200);
 
 // ===== Загрузка номинаций =====
@@ -34,17 +50,16 @@ async function loadNominations() {
       '<p>Номинации скоро появятся...</p>';
     return;
   }
-
-  loadCurrentNom();
 }
 
 // ===== Загрузка текущей =====
 function loadCurrentNom() {
-  const nom = nominations[currentNom];
+  if (currentNom >= nominations.length) return;
 
+  const nom = nominations[currentNom];
   const container = document.getElementById('nominationContainer');
 
-   container.innerHTML = `
+  container.innerHTML = `
     <div class="nom-main-title">${nom.title}</div>
     <div class="nom-title">${nom.description}</div>
 
@@ -52,16 +67,14 @@ function loadCurrentNom() {
     <button id="sendBtn">Отправить</button>
   `;
 
-
-  document.getElementById('sendBtn').onclick = () =>
-    submitNom(nom.id);
+  document.getElementById('sendBtn').onclick = () => submitNom(nom.id);
 
   updateProgress();
 }
 
 // ===== Прогресс =====
 function updateProgress() {
-  const percent = ((currentNom) / nominations.length) * 100;
+  const percent = (currentNom / nominations.length) * 100;
   document.getElementById('progressFill').style.width = percent + '%';
 }
 
@@ -78,13 +91,11 @@ async function submitNom(nomId) {
     window.Telegram?.WebApp?.initDataUnsafe?.user?.id ||
     'web_' + navigator.userAgent;
 
-  const { error } = await supabase
-    .from('mentions')
-    .insert({
-      nomination_id: nomId,
-      nickname,
-      tg_id: tgId
-    });
+  const { error } = await supabase.from('mentions').insert({
+    nomination_id: nomId,
+    nickname,
+    tg_id: tgId
+  });
 
   if (error) {
     if (error.code === '23505') {
@@ -96,17 +107,25 @@ async function submitNom(nomId) {
     return;
   }
 
+  // Сохраняем прогресс
   currentNom++;
+  if (currentNom < nominations.length) {
+    localStorage.setItem('currentNom', currentNom);
+  } else {
+    localStorage.removeItem('currentNom');
+  }
 
   if (currentNom >= nominations.length) {
     document.getElementById('nominationContainer').innerHTML = `
       <div class="nom-main-title">THANK YOU</div>
-      <div class="nom-title">7.02 YAUZA PLACE // сбор с 18:30 до 19:00, узнай кто победил</div>
+      <div class="nom-title">
+        7.02 YAUZA PLACE // сбор с 18:30 до 19:00, узнай кто победил
+      </div>
     `;
-
     document.getElementById('progressFill').style.width = '100%';
   } else {
     setTimeout(loadCurrentNom, 250);
   }
 }
+
 

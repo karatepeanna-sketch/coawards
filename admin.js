@@ -1,9 +1,12 @@
 // ======== Добавление номинации ========
 async function addNomination() {
+  const title = document.getElementById('title').value.trim();
   const desc = document.getElementById('desc').value.trim();
-  if (!desc) return alert('Введите описание');
 
-  const { error } = await supabase.from('nominations').insert({
+  if (!title || !desc) return alert('Заполни оба поля');
+
+  const { error } = await client.from('nominations').insert({
+    title: title,
     description: desc,
     active: true
   });
@@ -14,6 +17,7 @@ async function addNomination() {
     return;
   }
 
+  document.getElementById('title').value = '';
   document.getElementById('desc').value = '';
   loadAdmin();
 }

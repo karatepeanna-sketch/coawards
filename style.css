@@ -12,7 +12,7 @@ body {
   background: #020403;
   color: #00ff9c;
   font-family: "Press Start 2P", monospace;
-  margin:0;
+  margin:200;
   min-height:100vh;
   text-shadow:0 0 6px rgba(0,255,160,.6);
   display:flex;

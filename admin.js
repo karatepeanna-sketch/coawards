@@ -1,3 +1,5 @@
+const supabase = window.supabase;
+
 // ======== Добавление номинации ========
 async function addNomination() {
   const title = document.getElementById('title').value.trim();
@@ -5,8 +7,8 @@ async function addNomination() {
 
   if (!title || !desc) return alert('Заполни оба поля');
 
-  const { error } = await client.from('nominations').insert({
-    title: title,
+  const { error } = await supabase.from('nominations').insert({
+    title,
     description: desc,
     active: true
   });
@@ -42,7 +44,6 @@ async function loadAdmin() {
   wrap.innerHTML = '';
 
   noms.forEach(nom => {
-    // собираем упоминания по этой номинации
     const related = mentions.filter(
       m => Number(m.nomination_id) === Number(nom.id)
     );
@@ -52,7 +53,8 @@ async function loadAdmin() {
       counter[r.nickname] = (counter[r.nickname] || 0) + 1;
     });
 
-    const sorted = Object.entries(counter).sort((a,b) => b[1]-a[1]);
+    const sorted = Object.entries(counter)
+      .sort((a, b) => b[1] - a[1]);
 
     const div = document.createElement('div');
     div.className = 'admin';
@@ -60,18 +62,24 @@ async function loadAdmin() {
     div.innerHTML = `
       <input value="${nom.title}" id="title-${nom.id}" placeholder="Название">
       <input value="${nom.description}" id="desc-${nom.id}" placeholder="Описание">
-      <button onclick="updateNom(${nom.id})">💾</button>
-      <button onclick="deleteNom(${nom.id})">🗑</button>
 
-      ${sorted.length === 0 ? '<p>Пока нет упоминаний</p>' : ''}
-      ${sorted.map(s => `<div>${s[0]} — ${s[1]}</div>`).join('')}
+      <div class="admin-buttons">
+        <button onclick="updateNom(${nom.id})">💾</button>
+        <button onclick="deleteNom(${nom.id})">🗑</button>
+      </div>
+
+      <div class="admin-results">
+        ${sorted.length === 0 
+          ? '<p>Пока нет упоминаний</p>' 
+          : sorted.map(s => `<div>${s[0]} — ${s[1]}</div>`).join('')}
+      </div>
     `;
 
     wrap.appendChild(div);
   });
 }
 
-// ======== Удаление номинации ========
+// ======== Удаление ========
 async function deleteNom(id) {
   if (!confirm('Удалить номинацию и все упоминания?')) return;
 
@@ -81,14 +89,14 @@ async function deleteNom(id) {
   loadAdmin();
 }
 
-// ======== Редактирование номинации ========
+// ======== Обновление ========
 async function updateNom(id) {
   const title = document.getElementById(`title-${id}`).value.trim();
   const desc = document.getElementById(`desc-${id}`).value.trim();
 
   if (!title || !desc) return;
 
-  const { error } = await client
+  const { error } = await supabase
     .from('nominations')
     .update({ title, description: desc })
     .eq('id', id);

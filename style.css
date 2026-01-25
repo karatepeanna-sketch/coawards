@@ -1,22 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
+/* ===== GLOBAL ===== */
 * {
   font-family: "Press Start 2P", monospace;
   box-sizing: border-box;
+  margin:0;
+  padding:0;
 }
 
 body {
-  margin:0;
   background: #020403;
   color: #00ff9c;
   display:flex;
-  justify-content:center;
-  align-items:center;
+  flex-direction: column;
+  align-items: center;
   min-height:100vh;
   text-shadow:0 0 6px rgba(0,255,160,.6);
 }
 
-/* CRT scanlines */
+/* ===== CRT SCANLINES ===== */
 body::before {
   content:"";
   position:fixed;
@@ -33,15 +35,24 @@ body::before {
   z-index: 999;
 }
 
-.system-title {
-  font-size: 22px;
-  letter-spacing: 4px;
-  margin-bottom: 16px;
+/* ===== SYSTEM TITLE / AWARDS HEADER ===== */
+.system-title, .awards-title {
+  font-size: 28px;
   text-align: center;
+  margin: 20px 0;
   color: #00ff9c;
   text-shadow:
     0 0 6px rgba(0,255,160,.9),
-    0 0 14px rgba(0,255,160,.7);
+    0 0 16px rgba(0,255,160,.7);
+}
+
+.cursor::after {
+  content: "_";
+  animation: blink 1s infinite;
+}
+@keyframes blink {
+  0%,50% { opacity:1 }
+  51%,100% { opacity:0 }
 }
 
 /* ===== HEADERS ===== */
@@ -51,10 +62,14 @@ h1,h2,h3,h4 {
   margin:0;
 }
 
-/* ===== COMMON CONTAINER ===== */
+/* ===== CONTAINER ===== */
 .container {
-  max-width:400px;
-  width:100%;
+  display:flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content:flex-start;
+  max-width: 400px;
+  width: 100%;
   padding:20px;
   border:1px solid #00ff9c;
   background: rgba(0,255,160,0.03);
@@ -62,21 +77,21 @@ h1,h2,h3,h4 {
   margin-bottom:20px;
 }
 
-/* ===== TEXT HIERARCHY ===== */
+/* ===== NOMINATION TEXT HIERARCHY ===== */
 .nom-main-title {
-  font-size: 20px;
-  text-align: center;
-  margin-bottom: 6px;
-  letter-spacing: 2px;
-  text-shadow: 0 0 14px rgba(0,255,160,.95);
+  font-size: 18px;
+  text-align:center;
+  margin-bottom:4px;
+  letter-spacing:2px;
+  text-shadow: 0 0 10px rgba(0,255,160,.95);
 }
 
 .nom-title {
-  font-size: 9px;
-  text-align: center;
-  opacity: .85;
-  line-height: 1.5;
-  margin-bottom: 14px;
+  font-size: 10px;
+  text-align:center;
+  opacity:.8;
+  line-height:1.4;
+  margin-bottom:10px;
 }
 
 /* ===== INPUTS & BUTTONS ===== */
@@ -117,14 +132,12 @@ button:hover {
   background: black;
   overflow: hidden;
 }
-
 .progress-fill {
   height:100%;
   width:0%;
   background: linear-gradient(90deg,#00ff9c,#6bffd1,#00ff9c);
   animation: progressGlow 1.5s infinite linear;
 }
-
 @keyframes progressGlow {
   0% { filter: brightness(1) }
   50% { filter: brightness(1.6) }
@@ -136,16 +149,6 @@ button:hover {
   font-size:14px;
   text-align:center;
   line-height:1.6;
-}
-
-.cursor::after {
-  content: "_";
-  animation: blink 1s infinite;
-}
-
-@keyframes blink {
-  0%,50% { opacity:1 }
-  51%,100% { opacity:0 }
 }
 
 /* ===== VOTE CARD ===== */
@@ -173,8 +176,8 @@ button:hover {
 .admin-page {
   width:100%;
   display:flex;
-  justify-content:center;
-  align-items:flex-start;
+  flex-direction:column;
+  align-items:center;
   padding:16px;
 }
 
@@ -219,22 +222,11 @@ button:hover {
 
 /* ===== MOBILE ===== */
 @media(max-width:420px){
-
   .container { padding:14px; }
-
   h1 { font-size:18px; }
-
   .nom-main-title { font-size:16px; }
-
   .nom-title { font-size:8px; }
-
   input,button { font-size:14px; padding:10px; }
-
   .admin-page { padding:10px; }
-
-  .system-title {
-    font-size:18px;
-    margin-bottom:12px;
-  }
-
+  .system-title, .awards-title { font-size:18px; margin-bottom:12px; }
 }

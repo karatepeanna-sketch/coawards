@@ -1,34 +1,43 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CO: AWARDS 2026</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h1 class="system-title">CO: AWARDS 2026</h1>
-
-<div class="container">
-  <div id="bootScreen" class="boot-screen">
-    CONNECTED TERMINAL v1.0<br>
-    INITIALIZING...<br>
-    LOADING MODULES...<br>
-    ACCESS GRANTED<span class="cursor"></span>
+  <!-- SYSTEM TITLE -->
+  <div class="system-header">
+    <h1 class="system-title">CO: AWARDS 2026</h1>
+    <div class="system-sub">CONNECTED TERMINAL INTERFACE</div>
   </div>
 
-  <div id="voting" style="display:none;">
-    <div id="nominationContainer"></div>
-    <div class="progress-bar">
-      <div class="progress-fill" id="progressFill"></div>
+  <!-- MAIN TERMINAL -->
+  <div class="container">
+
+    <!-- BOOT SCREEN -->
+    <div id="bootScreen" class="boot-screen">
+      CONNECTED TERMINAL v1.0<br>
+      INITIALIZING CORE...<br>
+      LOADING MODULES...<br>
+      ACCESS GRANTED<span class="cursor"></span>
     </div>
-  </div>
-</div>
 
-<script type="module" src="vote.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+    <!-- VOTING UI -->
+    <div id="voting" style="display:none;">
+      <div id="nominationContainer"></div>
+
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module" src="vote.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
 
 </body>
 </html>

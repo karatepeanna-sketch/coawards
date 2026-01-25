@@ -48,7 +48,7 @@ function loadCurrentNom() {
     <div class="nom-main-title">${nom.title}</div>
     <div class="nom-title">${nom.description}</div>
 
-    <input id="nickname" placeholder="@nickname">
+    <input id="nickname" value="@" placeholder="@nickname">
     <button id="sendBtn">Отправить</button>
   `;
 

@@ -58,7 +58,8 @@ async function loadAdmin() {
     div.className = 'admin';
 
     div.innerHTML = `
-      <input value="${nom.description}" id="edit-${nom.id}">
+      <input value="${nom.title}" id="title-${nom.id}" placeholder="Название">
+      <input value="${nom.description}" id="desc-${nom.id}" placeholder="Описание">
       <button onclick="updateNom(${nom.id})">💾</button>
       <button onclick="deleteNom(${nom.id})">🗑</button>
 
@@ -82,12 +83,14 @@ async function deleteNom(id) {
 
 // ======== Редактирование номинации ========
 async function updateNom(id) {
-  const value = document.getElementById(`edit-${id}`).value.trim();
-  if (!value) return;
+  const title = document.getElementById(`title-${id}`).value.trim();
+  const desc = document.getElementById(`desc-${id}`).value.trim();
 
-  const { error } = await supabase
+  if (!title || !desc) return;
+
+  const { error } = await client
     .from('nominations')
-    .update({ description: value })
+    .update({ title, description: desc })
     .eq('id', id);
 
   if (error) {

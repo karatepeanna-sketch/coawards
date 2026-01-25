@@ -33,6 +33,17 @@ body::before {
   z-index: 999;
 }
 
+.system-title {
+  font-size: 22px;
+  letter-spacing: 4px;
+  margin-bottom: 16px;
+  text-align: center;
+  color: #00ff9c;
+  text-shadow:
+    0 0 6px rgba(0,255,160,.9),
+    0 0 14px rgba(0,255,160,.7);
+}
+
 /* ===== HEADERS ===== */
 h1,h2,h3,h4 {
   text-align:center;
@@ -221,5 +232,9 @@ button:hover {
 
   .admin-page { padding:10px; }
 
-}
+  .system-title {
+    font-size:18px;
+    margin-bottom:12px;
+  }
 
+}

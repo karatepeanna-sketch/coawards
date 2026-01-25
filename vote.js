@@ -14,7 +14,7 @@ setTimeout(async () => {
 
   await loadNominations();
 
-  // Если есть сохранённый прогресс
+  // Загружаем прогресс из localStorage
   const savedNom = localStorage.getItem('currentNom');
   if (savedNom && !isNaN(savedNom) && savedNom < nominations.length) {
     const continueVote = confirm(
@@ -67,6 +67,9 @@ function loadCurrentNom() {
     <button id="sendBtn">Отправить</button>
   `;
 
+  // Сохраняем прогресс при загрузке
+  localStorage.setItem('currentNom', currentNom);
+
   document.getElementById('sendBtn').onclick = () => submitNom(nom.id);
 
   updateProgress();
@@ -107,15 +110,10 @@ async function submitNom(nomId) {
     return;
   }
 
-  // Сохраняем прогресс
   currentNom++;
-  if (currentNom < nominations.length) {
-    localStorage.setItem('currentNom', currentNom);
-  } else {
-    localStorage.removeItem('currentNom');
-  }
 
   if (currentNom >= nominations.length) {
+    localStorage.removeItem('currentNom');
     document.getElementById('nominationContainer').innerHTML = `
       <div class="nom-main-title">THANK YOU</div>
       <div class="nom-title">
@@ -124,8 +122,7 @@ async function submitNom(nomId) {
     `;
     document.getElementById('progressFill').style.width = '100%';
   } else {
+    // Прогресс уже сохраняется в loadCurrentNom
     setTimeout(loadCurrentNom, 250);
   }
 }
-
-

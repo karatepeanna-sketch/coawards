@@ -11,11 +11,13 @@
 body {
   background: #020403;
   color: #00ff9c;
-  display:flex;
-  flex-direction: column;
-  align-items: center;
+  font-family: "Press Start 2P", monospace;
+  margin:0;
   min-height:100vh;
   text-shadow:0 0 6px rgba(0,255,160,.6);
+  display:flex;
+  flex-direction: column; /* заголовок сверху, контейнер ниже */
+  align-items: center;
 }
 
 /* ===== CRT SCANLINES ===== */
@@ -36,14 +38,13 @@ body::before {
 }
 
 /* ===== SYSTEM TITLE / AWARDS HEADER ===== */
-.system-title, .awards-title {
+/* Заголовок CO: AWARDS 2026 */
+.awards-title {
+  margin: 20px 0 0 0;
   font-size: 28px;
-  text-align: center;
-  margin: 20px 0;
   color: #00ff9c;
-  text-shadow:
-    0 0 6px rgba(0,255,160,.9),
-    0 0 16px rgba(0,255,160,.7);
+  text-shadow: 0 0 6px rgba(0,255,160,.9), 0 0 16px rgba(0,255,160,.7);
+  text-align: center;
 }
 
 .cursor::after {
@@ -67,14 +68,14 @@ h1,h2,h3,h4 {
   display:flex;
   flex-direction: column;
   align-items: center;
-  justify-content:flex-start;
-  max-width: 400px;
-  width: 100%;
+  justify-content:center;
+  max-width:400px;
+  width:100%;
   padding:20px;
   border:1px solid #00ff9c;
   background: rgba(0,255,160,0.03);
   box-shadow: 0 0 20px rgba(0,255,160,.15);
-  margin-bottom:20px;
+  margin-top: 20px; /* расстояние от заголовка */
 }
 
 /* ===== NOMINATION TEXT HIERARCHY ===== */

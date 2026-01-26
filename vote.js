@@ -4,7 +4,7 @@ const supabaseUrl = "https://bzgrvzaswfcqoyzindnr.supabase.co";
 const supabaseKey = "sb_publishable__PvJTawE7Ql_6ZMLmqSgFw_f2rtCVHe";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// ===== Уникальный ID пользователя =====
+// ===== Получаем уникальный ID пользователя =====
 function getUserId() {
   const tgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
   if (tgId) return 'tg_' + tgId;
@@ -20,6 +20,7 @@ function getUserId() {
 const tgId = getUserId();
 
 let nominations = [];
+let votedIds = [];
 let currentNom = 0;
 
 // ===== Boot screen =====
@@ -27,58 +28,63 @@ setTimeout(async () => {
   document.getElementById('bootScreen').style.display = 'none';
   document.getElementById('voting').style.display = 'block';
 
-  await loadNominations();
-  await skipVoted();
-
+  await loadData();
+  detectProgress();
   loadCurrentNom();
 }, 2200);
 
-// ===== Загрузка номинаций =====
-async function loadNominations() {
-  const { data, error } = await supabase
+// ===== Грузим всё сразу =====
+async function loadData() {
+  const { data: noms, error: nomErr } = await supabase
     .from('nominations')
     .select('*')
     .eq('active', true)
     .order('id', { ascending: true });
 
-  if (error) {
-    console.error(error);
+  if (nomErr) {
+    console.error('Ошибка nominations', nomErr);
     return;
   }
 
-  nominations = data;
+  const { data: voted, error: voteErr } = await supabase
+    .from('mentions')
+    .select('nomination_id')
+    .eq('tg_id', tgId);
+
+  if (voteErr) {
+    console.error('Ошибка mentions', voteErr);
+    return;
+  }
+
+  nominations = noms;
+  votedIds = voted.map(v => v.nomination_id);
 }
 
-// ===== Пропуск уже проголосованных =====
-async function skipVoted() {
-  while (currentNom < nominations.length) {
-    const nom = nominations[currentNom];
+// ===== Определяем, где человек остановился =====
+function detectProgress() {
+  currentNom = 0;
 
-    const { data, error } = await supabase
-      .from('mentions')
-      .select('id')
-      .eq('nomination_id', nom.id)
-      .eq('tg_id', tgId)
-      .limit(1);
-
-    if (error) {
-      console.error(error);
-      break;
-    }
-
-    if (!data.length) break;
-
+  while (
+    currentNom < nominations.length &&
+    votedIds.includes(nominations[currentNom].id)
+  ) {
     currentNom++;
   }
 }
 
-// ===== Загрузка текущей =====
+// ===== Отображаем текущую =====
 function loadCurrentNom() {
+  if (!nominations.length) {
+    document.getElementById('nominationContainer').innerHTML =
+      '<p>Номинации скоро появятся...</p>';
+    return;
+  }
+
   if (currentNom >= nominations.length) {
     document.getElementById('nominationContainer').innerHTML = `
       <div class="nom-main-title">THANK YOU</div>
       <div class="nom-title">
-        7.02 YAUZA PLACE // сбор с 18:30 до 19:00, узнаем победителей
+        7.02 YAUZA PLACE // сбор с 18:30 до 19:00
       </div>
     `;
     document.getElementById('progressFill').style.width = '100%';
@@ -122,7 +128,7 @@ async function submitNom(nomId) {
 
   if (error) {
     if (error.code === '23505') {
-      alert('Ты уже голосовал в этой номинации 👀');
+      alert('Ты уже голосовал 👀');
     } else {
       console.error(error);
       alert('Ошибка отправки 😢');
@@ -130,12 +136,11 @@ async function submitNom(nomId) {
     return;
   }
 
+  votedIds.push(nomId);
   currentNom++;
-  await skipVoted();
+
+  detectProgress();
   loadCurrentNom();
 }
 
-
-  loadCurrentNom();
-}
 

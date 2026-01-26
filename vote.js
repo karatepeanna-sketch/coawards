@@ -4,23 +4,31 @@ const supabaseUrl = "https://bzgrvzaswfcqoyzindnr.supabase.co";
 const supabaseKey = "sb_publishable__PvJTawE7Ql_6ZMLmqSgFw_f2rtCVHe";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// ===== Уникальный ID пользователя =====
+function getUserId() {
+  const tgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+  if (tgId) return 'tg_' + tgId;
+
+  let localId = localStorage.getItem('local_uid');
+  if (!localId) {
+    localId = 'web_' + crypto.randomUUID();
+    localStorage.setItem('local_uid', localId);
+  }
+  return localId;
+}
+
+const tgId = getUserId();
+
 let nominations = [];
 let currentNom = 0;
 
-// Boot screen
+// ===== Boot screen =====
 setTimeout(async () => {
   document.getElementById('bootScreen').style.display = 'none';
   document.getElementById('voting').style.display = 'block';
 
   await loadNominations();
-
-  // Загружаем проголосованные номинации из localStorage
-  const voted = JSON.parse(localStorage.getItem('votedNoms') || "[]");
-
-  // Пропускаем уже проголосованные
-  while (voted.includes(nominations[currentNom]?.id)) {
-    currentNom++;
-  }
+  await skipVoted();
 
   loadCurrentNom();
 }, 2200);
@@ -39,21 +47,38 @@ async function loadNominations() {
   }
 
   nominations = data;
+}
 
-  if (!nominations.length) {
-    document.getElementById('nominationContainer').innerHTML =
-      '<p>Номинации скоро появятся...</p>';
-    return;
+// ===== Пропуск уже проголосованных =====
+async function skipVoted() {
+  while (currentNom < nominations.length) {
+    const nom = nominations[currentNom];
+
+    const { data, error } = await supabase
+      .from('mentions')
+      .select('id')
+      .eq('nomination_id', nom.id)
+      .eq('tg_id', tgId)
+      .limit(1);
+
+    if (error) {
+      console.error(error);
+      break;
+    }
+
+    if (!data.length) break;
+
+    currentNom++;
   }
 }
 
-// ===== Загрузка текущей номинации =====
+// ===== Загрузка текущей =====
 function loadCurrentNom() {
   if (currentNom >= nominations.length) {
     document.getElementById('nominationContainer').innerHTML = `
       <div class="nom-main-title">THANK YOU</div>
       <div class="nom-title">
-        7.02 YAUZA PLACE // сбор с 18:30 до 19:00, узнай кто победил
+        7.02 YAUZA PLACE // сбор с 18:30 до 19:00, узнаем победителей
       </div>
     `;
     document.getElementById('progressFill').style.width = '100%';
@@ -61,9 +86,8 @@ function loadCurrentNom() {
   }
 
   const nom = nominations[currentNom];
-  const container = document.getElementById('nominationContainer');
 
-  container.innerHTML = `
+  document.getElementById('nominationContainer').innerHTML = `
     <div class="nom-main-title">${nom.title}</div>
     <div class="nom-title">${nom.description}</div>
 
@@ -72,7 +96,6 @@ function loadCurrentNom() {
   `;
 
   document.getElementById('sendBtn').onclick = () => submitNom(nom.id);
-
   updateProgress();
 }
 
@@ -91,10 +114,6 @@ async function submitNom(nomId) {
     return;
   }
 
-  const tgId =
-    window.Telegram?.WebApp?.initDataUnsafe?.user?.id ||
-    'web_' + navigator.userAgent;
-
   const { error } = await supabase.from('mentions').insert({
     nomination_id: nomId,
     nickname,
@@ -103,7 +122,7 @@ async function submitNom(nomId) {
 
   if (error) {
     if (error.code === '23505') {
-      alert('Ты уже отправлял вариант для этой номинации 👀');
+      alert('Ты уже голосовал в этой номинации 👀');
     } else {
       console.error(error);
       alert('Ошибка отправки 😢');
@@ -111,17 +130,11 @@ async function submitNom(nomId) {
     return;
   }
 
-  // Добавляем проголосованную номинацию в localStorage
-  const voted = JSON.parse(localStorage.getItem('votedNoms') || "[]");
-  voted.push(nomId);
-  localStorage.setItem('votedNoms', JSON.stringify(voted));
-
   currentNom++;
+  await skipVoted();
+  loadCurrentNom();
+}
 
-  // Пропускаем уже проголосованные номинации
-  while (voted.includes(nominations[currentNom]?.id)) {
-    currentNom++;
-  }
 
   loadCurrentNom();
 }

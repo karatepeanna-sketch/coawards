@@ -6,7 +6,11 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 let nominations = [];
 let currentNom = 0;
-const tgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 'web_' + navigator.userAgent;
+let votedIds = [];
+
+const tgId =
+  window.Telegram?.WebApp?.initDataUnsafe?.user?.id ||
+  'web_' + navigator.userAgent;
 
 // Boot screen
 setTimeout(async () => {
@@ -14,8 +18,8 @@ setTimeout(async () => {
   document.getElementById('voting').style.display = 'block';
 
   await loadNominations();
-  await skipVoted(); // Пропускаем уже проголосованные
-
+  await loadVoted();
+  skipVoted();
   loadCurrentNom();
 }, 2200);
 
@@ -27,45 +31,57 @@ async function loadNominations() {
     .eq('active', true)
     .order('id', { ascending: true });
 
-  if (error) { console.error(error); return; }
+  if (error) {
+    console.error(error);
+    return;
+  }
+
   nominations = data;
 }
 
-// ===== Пропуск номинаций, за которые уже голосовал =====
-async function skipVoted() {
-  while (currentNom < nominations.length) {
-    const nom = nominations[currentNom];
-    const { data: existing, error } = await supabase
-      .from('mentions')
-      .select('id')
-      .eq('nomination_id', nom.id)
-      .eq('tg_id', tgId)
-      .limit(1);
+// ===== Получаем уже проголосованные =====
+async function loadVoted() {
+  const { data, error } = await supabase
+    .from('mentions')
+    .select('nomination_id')
+    .eq('tg_id', tgId);
 
-    if (error) { console.error(error); break; }
+  if (error) {
+    console.error(error);
+    return;
+  }
 
-    if (existing.length === 0) break; // ещё не голосовал, показываем эту номинацию
-    currentNom++; // уже голосовал, пропускаем
+  votedIds = data.map(v => Number(v.nomination_id));
+}
+
+// ===== Пропуск уже проголосованных =====
+function skipVoted() {
+  while (
+    currentNom < nominations.length &&
+    votedIds.includes(Number(nominations[currentNom].id))
+  ) {
+    currentNom++;
   }
 }
 
-// ===== Загрузка текущей номинации =====
+// ===== Загрузка текущей =====
 function loadCurrentNom() {
   if (currentNom >= nominations.length) {
     document.getElementById('nominationContainer').innerHTML = `
       <div class="nom-main-title">THANK YOU</div>
       <div class="nom-title">
-        7.02 YAUZA PLACE // сбор с 18:30 до 19:00, узнай кто победил
+        7.02 YAUZA PLACE // сбор с 18:30 до 19:00<br>
+        узнай, кого выбрало комьюнити
       </div>
     `;
+
     document.getElementById('progressFill').style.width = '100%';
     return;
   }
 
   const nom = nominations[currentNom];
-  const container = document.getElementById('nominationContainer');
 
-  container.innerHTML = `
+  document.getElementById('nominationContainer').innerHTML = `
     <div class="nom-main-title">${nom.title}</div>
     <div class="nom-title">${nom.description}</div>
 
@@ -73,7 +89,9 @@ function loadCurrentNom() {
     <button id="sendBtn">Отправить</button>
   `;
 
-  document.getElementById('sendBtn').onclick = () => submitNom(nom.id);
+  document.getElementById('sendBtn').onclick = () =>
+    submitNom(nom.id);
+
   updateProgress();
 }
 
@@ -86,16 +104,33 @@ function updateProgress() {
 // ===== Отправка =====
 async function submitNom(nomId) {
   const nickname = document.getElementById('nickname').value.trim();
-  if (!nickname.startsWith('@')) { alert('Введите ник в формате @username'); return; }
 
-  const { error } = await supabase.from('mentions').insert({ nomination_id: nomId, nickname, tg_id: tgId });
-  if (error) {
-    if (error.code === '23505') alert('Ты уже отправлял вариант для этой номинации 👀');
-    else { console.error(error); alert('Ошибка отправки 😢'); }
+  if (!nickname.startsWith('@')) {
+    alert('Введите ник в формате @username');
     return;
   }
 
+  const { error } = await supabase
+    .from('mentions')
+    .insert({
+      nomination_id: nomId,
+      nickname,
+      tg_id: tgId
+    });
+
+  if (error) {
+    if (error.code === '23505') {
+      alert('Ты уже голосовал за эту номинацию 👀');
+    } else {
+      console.error(error);
+      alert('Ошибка отправки 😢');
+    }
+    return;
+  }
+
+  votedIds.push(Number(nomId));
   currentNom++;
-  await skipVoted(); // Пропускаем следующие, уже проголосованные
+
+  skipVoted();
   loadCurrentNom();
 }
